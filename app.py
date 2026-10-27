@@ -378,7 +378,7 @@ else:
 
     videos = (sb.table("cursos").select("*")
               .eq("curso", st.session_state.curso).order("modulo").execute().data)
-    duracion = duracion_texto(videos[0].get("duracion_video")) if videos else ""
+    duracion = "2 horas lectivas"
     titulo = (videos[0].get("titulo_certificado") if videos else None) or TITULO_DEFECTO
 
     if st.session_state.resultado:
