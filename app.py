@@ -34,6 +34,25 @@ st.markdown("""
     }
     h1, h2, h3 {font-weight: 800;}
     h2 {border-left: 6px solid #FFD600; padding-left: 12px;}
+    div[role="radiogroup"] {gap: 0.7rem;}
+    div[role="radiogroup"] > label {
+        background-color: #1A1A1A;
+        border: 1px solid #333333;
+        border-radius: 8px;
+        padding: 0.8rem 1rem;
+        line-height: 1.5;
+        width: 100%;
+    }
+    div[role="radiogroup"] > label:hover {border-color: #FFD600;}
+    div[role="radiogroup"] > label:has(input:checked) {
+        border-color: #FFD600;
+        background-color: #2A2500;
+    }
+    div[data-testid="stRadio"] {
+        margin-bottom: 1.8rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid #2A2A2A;
+    }
 </style>
 """, unsafe_allow_html=True)
 
