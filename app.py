@@ -180,8 +180,8 @@ CAMPOS = {
     "dni":      (528, 1118, 1512, 44),
     "cargo":    (530, 1233, 1512, 44),
     "nota":     (528, 1361, 1512, 44),
-    "fecha":    (298, 1515, 795, 38),
-    "cert":     (1010, 1515, 1503, 30),
+    "fecha":    (298, 1545, 795, 34),
+    "cert":     (1010, 1545, 1503, 28),
 }
 SUBIDA = 12          # píxeles que el texto flota sobre la línea
 QR_CAJA = (262, 1587, 533, 1836)   # zona blanca del recuadro del QR
