@@ -39,7 +39,7 @@ st.markdown("""
 
 NOTA_MINIMA = 70
 BASE_URL = "https://macgyver-app-vvqmwfmp9utwfx5cpxzrak.streamlit.app"
-NOMBRES_CURSO = {"induccion_ssoma": "INDUCCIÓN SSOMA"}
+TITULO_DEFECTO = "INDUCCIÓN SSOMA"
 
 LIMA = timezone(timedelta(hours=-5))
 
@@ -152,53 +152,95 @@ def duracion_texto(valor):
         while len(p) < 3:
             p.insert(0, 0)
         horas = p[0] + p[1] / 60 + p[2] / 3600
+        if horas <= 0:
+            return ""
         return f"{horas:.1f} horas"
     except Exception:
         return ""
 
 def fuente(tam):
-    for ruta in ["fuente.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]:
+    for ruta in ["fuente.ttf",
+                 "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                 "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"]:
         try:
             return ImageFont.truetype(ruta, tam)
         except OSError:
             continue
     return ImageFont.load_default(tam)
 
+# ---------- POSICIONES DEL CERTIFICADO ----------
+# Medidas sobre una plantilla de 1623 px de ancho (se escalan solas).
+# (x_inicio, y_de_la_linea, x_fin, tamaño_letra)
+REF_W = 1623
+CAMPOS = {
+    "tema":     (528, 650, 1512, 34),
+    "duracion": (528, 759, 1512, 44),
+    "empresa":  (528, 872, 1512, 44),
+    "nombre":   (626, 992, 1512, 44),
+    "dni":      (528, 1118, 1512, 44),
+    "cargo":    (530, 1233, 1512, 44),
+    "nota":     (528, 1361, 1512, 44),
+    "fecha":    (298, 1515, 795, 38),
+    "cert":     (1010, 1515, 1503, 30),
+}
+SUBIDA = 12          # píxeles que el texto flota sobre la línea
+QR_CAJA = (262, 1587, 533, 1836)   # zona blanca del recuadro del QR
+QR_TAM = 232
+QR_POS = (281, 1595)
+
+def partir_en_dos(texto):
+    palabras = texto.split()
+    if len(palabras) < 2:
+        return [texto]
+    mejor, dif = None, 10**9
+    for i in range(1, len(palabras)):
+        a, b = " ".join(palabras[:i]), " ".join(palabras[i:])
+        d = abs(len(a) - len(b))
+        if d < dif:
+            mejor, dif = [a, b], d
+    return mejor
+
 def generar_certificado(dat):
     img = Image.open("certificado.png").convert("RGB")
     W, H = img.size
-    s = W / 1055  # escala respecto al diseño base
+    s = W / REF_W
     draw = ImageDraw.Draw(img)
 
-    def escribir(x, linea_y, texto, x_fin=982, size=34):
+    def escribir(campo, texto, dos_lineas=False):
+        x, y, x_fin, size = CAMPOS[campo]
+        ancho = (x_fin - x - 8) * s
+        lineas = [texto]
+        if dos_lineas and draw.textlength(texto, font=fuente(int(size * s))) > ancho:
+            lineas = partir_en_dos(texto)
         tam = int(size * s)
-        maximo = (x_fin - x - 12) * s
         f = fuente(tam)
-        while draw.textlength(texto, font=f) > maximo and tam > 12:
+        while max(draw.textlength(l, font=f) for l in lineas) > ancho and tam > 14:
             tam -= 2
             f = fuente(tam)
-        draw.text((x * s, (linea_y - 9) * s), texto, font=f,
-                  fill=(10, 10, 10), anchor="ls")
+        base = (y - SUBIDA) * s
+        paso = tam * 1.2
+        for i, l in enumerate(reversed(lineas)):
+            draw.text((x * s, base - i * paso), l, font=f,
+                      fill=(10, 10, 10), anchor="ls")
 
-    escribir(345, 427, dat["tema"])
-    escribir(345, 498, dat["duracion"])
-    escribir(345, 574, dat["empresa"].upper())
-    escribir(405, 655, dat["nombre"].upper())
-    escribir(345, 735, dat["dni"])
-    escribir(345, 810, dat["cargo"].upper())
-    escribir(345, 892, dat["nota"])
-    escribir(215, 1019, dat["fecha"], x_fin=480, size=28)
-    escribir(688, 1019, dat["cert"], x_fin=968, size=24)
+    escribir("tema", dat["tema"], dos_lineas=True)
+    escribir("duracion", dat["duracion"])
+    escribir("empresa", dat["empresa"].upper())
+    escribir("nombre", dat["nombre"].upper())
+    escribir("dni", dat["dni"])
+    escribir("cargo", dat["cargo"].upper())
+    escribir("nota", dat["nota"])
+    escribir("fecha", dat["fecha"])
+    escribir("cert", dat["cert"])
 
-    # QR real de verificación (tapa el QR de ejemplo)
-    qr = qrcode.QRCode(box_size=8, border=0)
+    # QR de verificación dentro del recuadro vacío
+    qr = qrcode.QRCode(box_size=10, border=1)
     qr.add_data(f"{BASE_URL}/?v={dat['cert']}")
     qr.make(fit=True)
     qimg = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-    tam_qr = int(143 * s)
-    qimg = qimg.resize((tam_qr, tam_qr), Image.NEAREST)
-    draw.rectangle([367 * s, 1093 * s, 522 * s, 1246 * s], fill="white")
-    img.paste(qimg, (int(373 * s), int(1098 * s)))
+    qimg = qimg.resize((int(QR_TAM * s), int(QR_TAM * s)), Image.NEAREST)
+    draw.rectangle([c * s for c in QR_CAJA], fill="white")
+    img.paste(qimg, (int(QR_POS[0] * s), int(QR_POS[1] * s)))
 
     buf = io.BytesIO()
     img.save(buf, "PDF", resolution=W / 8.27)
@@ -233,10 +275,13 @@ if cod_qr:
          .eq("cert_codigo", cod_qr).eq("aprobo", True).limit(1).execute().data)
     if r:
         r = r[0]
+        c = (sb.table("cursos").select("titulo_certificado")
+             .eq("curso", r["curso"]).limit(1).execute().data)
+        titulo = (c[0].get("titulo_certificado") if c else None) or TITULO_DEFECTO
         fecha = datetime.fromisoformat(str(r["fecha_fin"])[:19]).strftime("%d/%m/%Y")
         st.success("✅ ESTA CAPACITACIÓN ESTÁ AVALADA POR MACGYVER SEGURIDAD EN CONSTRUCCIÓN")
         st.markdown(f"**Participante:** {r['nombre'].upper()}")
-        st.markdown(f"**Curso:** {NOMBRES_CURSO.get(r['curso'], r['curso'])}")
+        st.markdown(f"**Curso:** {titulo}")
         st.markdown(f"**Fecha de emisión:** {fecha}")
         st.markdown(f"**Código:** {cod_qr}")
     else:
@@ -244,14 +289,14 @@ if cod_qr:
     st.stop()
 
 # ---------- Resultado (aprobado / desaprobado) ----------
-def mostrar_resultado(r, duracion):
+def mostrar_resultado(r, duracion, titulo):
     if r.get("aprobo"):
         st.success("🎉 ¡FELICITACIONES! UD. HA APROBADO LA EVALUACIÓN.")
         total = len(PREGUNTAS)
         correctas = round(r["nota"] * total / 100)
         fecha = datetime.fromisoformat(str(r["fecha_fin"])[:19]).strftime("%d/%m/%Y")
         pdf = generar_certificado({
-            "tema": NOMBRES_CURSO.get(r["curso"], str(r["curso"]).replace("_", " ").upper()),
+            "tema": titulo,
             "duracion": duracion,
             "empresa": r["empresa"],
             "nombre": r["nombre"],
@@ -334,9 +379,10 @@ else:
     videos = (sb.table("cursos").select("*")
               .eq("curso", st.session_state.curso).order("modulo").execute().data)
     duracion = duracion_texto(videos[0].get("duracion_video")) if videos else ""
+    titulo = (videos[0].get("titulo_certificado") if videos else None) or TITULO_DEFECTO
 
     if st.session_state.resultado:
-        mostrar_resultado(st.session_state.resultado, duracion)
+        mostrar_resultado(st.session_state.resultado, duracion, titulo)
         st.stop()
 
     for v in videos:
