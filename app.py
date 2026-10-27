@@ -1,6 +1,11 @@
 import base64
+import io
+import unicodedata
+from datetime import datetime, timezone, timedelta
+
+import qrcode
 import streamlit as st
-from datetime import datetime
+from PIL import Image, ImageDraw, ImageFont
 from supabase import create_client
 
 st.set_page_config(
@@ -18,12 +23,13 @@ st.markdown("""
         background: repeating-linear-gradient(
             -45deg, #FFD600, #FFD600 14px, #0A0A0A 14px, #0A0A0A 28px);
     }
-    .stButton > button, .stFormSubmitButton > button {
+    .stButton > button, .stFormSubmitButton > button, .stDownloadButton > button {
         background-color: #FFD600; color: #0A0A0A; font-weight: 800;
         border: none; border-radius: 6px; padding: 0.6rem 1.4rem;
         text-transform: uppercase; width: 100%;
     }
-    .stButton > button:hover, .stFormSubmitButton > button:hover {
+    .stButton > button:hover, .stFormSubmitButton > button:hover,
+    .stDownloadButton > button:hover {
         background-color: #FFFFFF; color: #0A0A0A;
     }
     h1, h2, h3 {font-weight: 800;}
@@ -32,6 +38,13 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 NOTA_MINIMA = 70
+BASE_URL = "https://macgyver-app-vvqmwfmp9utwfx5cpxzrak.streamlit.app"
+NOMBRES_CURSO = {"induccion_ssoma": "INDUCCIÓN SSOMA"}
+
+LIMA = timezone(timedelta(hours=-5))
+
+def ahora():
+    return datetime.now(LIMA).replace(tzinfo=None)
 
 PREGUNTAS = [
     {"p": "¿Qué es un peligro?",
@@ -122,17 +135,86 @@ PREGUNTAS = [
            "Continuar con la excavación y completar los documentos al finalizar."], "c": 1},
 ]
 
+# ---------- Utilidades ----------
+def solo_letras(texto):
+    t = unicodedata.normalize("NFKD", str(texto))
+    t = "".join(c for c in t if not unicodedata.combining(c))
+    return "".join(c for c in t.upper() if c.isalpha())
+
+def codigo_certificado(codigo, nombre, dni):
+    partes = nombre.split()
+    apellido = solo_letras(partes[0]) if partes else "X"
+    return f"{codigo.replace('-', '')}-{apellido}-{dni[-4:]}"
+
+def duracion_texto(valor):
+    try:
+        p = [int(x) for x in str(valor).split(":")]
+        while len(p) < 3:
+            p.insert(0, 0)
+        horas = p[0] + p[1] / 60 + p[2] / 3600
+        return f"{horas:.1f} horas"
+    except Exception:
+        return ""
+
+def fuente(tam):
+    for ruta in ["fuente.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]:
+        try:
+            return ImageFont.truetype(ruta, tam)
+        except OSError:
+            continue
+    return ImageFont.load_default(tam)
+
+def generar_certificado(dat):
+    img = Image.open("certificado.png").convert("RGB")
+    W, H = img.size
+    s = W / 1055  # escala respecto al diseño base
+    draw = ImageDraw.Draw(img)
+
+    def escribir(x, linea_y, texto, x_fin=982, size=34):
+        tam = int(size * s)
+        maximo = (x_fin - x - 12) * s
+        f = fuente(tam)
+        while draw.textlength(texto, font=f) > maximo and tam > 12:
+            tam -= 2
+            f = fuente(tam)
+        draw.text((x * s, (linea_y - 9) * s), texto, font=f,
+                  fill=(10, 10, 10), anchor="ls")
+
+    escribir(345, 427, dat["tema"])
+    escribir(345, 498, dat["duracion"])
+    escribir(345, 574, dat["empresa"].upper())
+    escribir(405, 655, dat["nombre"].upper())
+    escribir(345, 735, dat["dni"])
+    escribir(345, 810, dat["cargo"].upper())
+    escribir(345, 892, dat["nota"])
+    escribir(215, 1019, dat["fecha"], x_fin=480, size=28)
+    escribir(688, 1019, dat["cert"], x_fin=968, size=24)
+
+    # QR real de verificación (tapa el QR de ejemplo)
+    qr = qrcode.QRCode(box_size=8, border=0)
+    qr.add_data(f"{BASE_URL}/?v={dat['cert']}")
+    qr.make(fit=True)
+    qimg = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    tam_qr = int(143 * s)
+    qimg = qimg.resize((tam_qr, tam_qr), Image.NEAREST)
+    draw.rectangle([367 * s, 1093 * s, 522 * s, 1246 * s], fill="white")
+    img.paste(qimg, (int(373 * s), int(1098 * s)))
+
+    buf = io.BytesIO()
+    img.save(buf, "PDF", resolution=W / 8.27)
+    return buf.getvalue()
+
 @st.cache_resource
 def conectar():
     return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
 
 sb = conectar()
 
-for clave, valor in {"acceso": False, "ya_vio": False, "enviado": False}.items():
+for clave, valor in {"acceso": False, "ya_vio": False, "resultado": None}.items():
     if clave not in st.session_state:
         st.session_state[clave] = valor
 
-# ---------- Logo sobre tarjeta blanca ----------
+# ---------- Logo ----------
 with open("logo.png", "rb") as f:
     logo_b64 = base64.b64encode(f.read()).decode()
 
@@ -143,6 +225,51 @@ st.markdown(
     unsafe_allow_html=True,
 )
 st.markdown('<div class="franja"></div>', unsafe_allow_html=True)
+
+# ---------- Verificación por QR ----------
+cod_qr = st.query_params.get("v")
+if cod_qr:
+    r = (sb.table("resultados").select("nombre,curso,fecha_fin")
+         .eq("cert_codigo", cod_qr).eq("aprobo", True).limit(1).execute().data)
+    if r:
+        r = r[0]
+        fecha = datetime.fromisoformat(str(r["fecha_fin"])[:19]).strftime("%d/%m/%Y")
+        st.success("✅ ESTA CAPACITACIÓN ESTÁ AVALADA POR MACGYVER SEGURIDAD EN CONSTRUCCIÓN")
+        st.markdown(f"**Participante:** {r['nombre'].upper()}")
+        st.markdown(f"**Curso:** {NOMBRES_CURSO.get(r['curso'], r['curso'])}")
+        st.markdown(f"**Fecha de emisión:** {fecha}")
+        st.markdown(f"**Código:** {cod_qr}")
+    else:
+        st.error("Certificado no válido o no encontrado.")
+    st.stop()
+
+# ---------- Resultado (aprobado / desaprobado) ----------
+def mostrar_resultado(r, duracion):
+    if r.get("aprobo"):
+        st.success("🎉 ¡FELICITACIONES! UD. HA APROBADO LA EVALUACIÓN.")
+        total = len(PREGUNTAS)
+        correctas = round(r["nota"] * total / 100)
+        fecha = datetime.fromisoformat(str(r["fecha_fin"])[:19]).strftime("%d/%m/%Y")
+        pdf = generar_certificado({
+            "tema": NOMBRES_CURSO.get(r["curso"], str(r["curso"]).replace("_", " ").upper()),
+            "duracion": duracion,
+            "empresa": r["empresa"],
+            "nombre": r["nombre"],
+            "dni": r["dni"],
+            "cargo": r["cargo"],
+            "nota": f"{correctas}/{total} ({r['nota']}%)",
+            "fecha": fecha,
+            "cert": r["cert_codigo"],
+        })
+        st.download_button("Descargar mi certificado (PDF)", data=pdf,
+                           file_name=f"certificado_{r['cert_codigo']}.pdf",
+                           mime="application/pdf")
+    else:
+        st.error(
+            "UD. HA DESAPROBADO, POR FAVOR COMUNÍQUESE CON SU OPERADOR DE CONTRATO "
+            "PARA REPROGRAMARLO.\n\n"
+            "Debe prestar más atención, la seguridad no es un juego."
+        )
 
 # ---------- Pantalla 1: Ingreso ----------
 if not st.session_state.acceso:
@@ -183,11 +310,12 @@ if not st.session_state.acceso:
                             "whatsapp": whatsapp,
                         }).eq("codigo", codigo).execute()
 
-                    previo = (sb.table("resultados").select("id")
-                              .eq("codigo", codigo).execute().data)
+                    previo = (sb.table("resultados").select("*")
+                              .eq("codigo", codigo).order("id", desc=True)
+                              .limit(1).execute().data)
 
                     st.session_state.acceso = True
-                    st.session_state.enviado = bool(previo)
+                    st.session_state.resultado = previo[0] if previo else None
                     st.session_state.empresa = empresa
                     st.session_state.nombre = nombre
                     st.session_state.dni = dni
@@ -196,19 +324,21 @@ if not st.session_state.acceso:
                     st.session_state.correo = correo
                     st.session_state.codigo = codigo
                     st.session_state.curso = fila["curso"]
-                    st.session_state.inicio = datetime.now().isoformat(timespec="seconds")
+                    st.session_state.inicio = ahora().isoformat(timespec="seconds")
                     st.rerun()
 
 # ---------- Pantalla 2: Video + Examen ----------
 else:
     st.success(f"Bienvenido, {st.session_state.nombre}")
 
-    if st.session_state.enviado:
-        st.success("Tu examen fue enviado. Será revisado y recibirás tu certificado.")
-        st.stop()
-
     videos = (sb.table("cursos").select("*")
               .eq("curso", st.session_state.curso).order("modulo").execute().data)
+    duracion = duracion_texto(videos[0].get("duracion_video")) if videos else ""
+
+    if st.session_state.resultado:
+        mostrar_resultado(st.session_state.resultado, duracion)
+        st.stop()
+
     for v in videos:
         if len(videos) > 1:
             st.subheader(f"Módulo {v['modulo']}")
@@ -237,12 +367,13 @@ else:
                 correctas = sum(1 for q, r in zip(PREGUNTAS, respuestas)
                                 if q["o"].index(r) == q["c"])
                 nota = round(correctas * 100 / len(PREGUNTAS))
+                aprobo = nota >= NOTA_MINIMA
                 detalle = [{"pregunta": q["p"], "respuesta": r}
                            for q, r in zip(PREGUNTAS, respuestas)]
 
-                sb.table("resultados").insert({
+                fila = {
                     "fecha_inicio": st.session_state.inicio,
-                    "fecha_fin": datetime.now().isoformat(timespec="seconds"),
+                    "fecha_fin": ahora().isoformat(timespec="seconds"),
                     "nombre": st.session_state.nombre,
                     "correo": st.session_state.correo,
                     "empresa": st.session_state.empresa,
@@ -252,10 +383,15 @@ else:
                     "curso": st.session_state.curso,
                     "codigo": st.session_state.codigo,
                     "nota": nota,
-                    "aprobo": nota >= NOTA_MINIMA,
+                    "aprobo": aprobo,
                     "respuestas": detalle,
                     "corregido": False,
-                }).execute()
+                    "cert_codigo": codigo_certificado(
+                        st.session_state.codigo,
+                        st.session_state.nombre,
+                        st.session_state.dni) if aprobo else None,
+                }
+                sb.table("resultados").insert(fila).execute()
 
-                st.session_state.enviado = True
+                st.session_state.resultado = fila
                 st.rerun()
