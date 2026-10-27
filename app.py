@@ -1,3 +1,4 @@
+import base64
 import streamlit as st
 from datetime import datetime
 from supabase import create_client
@@ -31,7 +32,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 NOTA_MINIMA = 70
-
 
 PREGUNTAS = [
     {"p": "¿Qué es un peligro?",
@@ -122,7 +122,6 @@ PREGUNTAS = [
            "Continuar con la excavación y completar los documentos al finalizar."], "c": 1},
 ]
 
-
 @st.cache_resource
 def conectar():
     return create_client(st.secrets["SUPABASE_URL"], st.secrets["SUPABASE_KEY"])
@@ -133,8 +132,7 @@ for clave, valor in {"acceso": False, "ya_vio": False, "enviado": False}.items()
     if clave not in st.session_state:
         st.session_state[clave] = valor
 
-import base64
-
+# ---------- Logo sobre tarjeta blanca ----------
 with open("logo.png", "rb") as f:
     logo_b64 = base64.b64encode(f.read()).decode()
 
@@ -149,13 +147,19 @@ st.markdown('<div class="franja"></div>', unsafe_allow_html=True)
 # ---------- Pantalla 1: Ingreso ----------
 if not st.session_state.acceso:
     st.subheader("Ingreso al curso")
-    nombre = st.text_input("Nombre completo").strip()
-    correo = st.text_input("Correo").strip().lower()
+    empresa = st.text_input("Empresa").strip()
+    nombre = st.text_input("Apellidos y Nombres (completos)").strip()
+    dni = st.text_input("DNI").strip()
+    cargo = st.text_input("Cargo").strip()
+    whatsapp = st.text_input("Número de WhatsApp").strip()
+    correo = st.text_input("Correo electrónico").strip().lower()
     codigo = st.text_input("Código de acceso").strip().upper()
 
     if st.button("Ingresar"):
-        if not nombre or not correo or not codigo:
+        if not all([empresa, nombre, dni, cargo, whatsapp, correo, codigo]):
             st.warning("Completa todos los campos.")
+        elif not dni.isdigit() or len(dni) != 8:
+            st.warning("El DNI debe tener 8 números.")
         else:
             res = sb.table("codigos").select("*").eq("codigo", codigo).execute().data
             if not res:
@@ -163,22 +167,32 @@ if not st.session_state.acceso:
             else:
                 fila = res[0]
                 usado = bool(fila["usado"])
-                correo_guardado = str(fila.get("correo") or "").strip().lower()
+                dni_guardado = str(fila.get("dni") or "").strip()
 
-                if usado and correo_guardado != correo:
+                if usado and dni_guardado != dni:
                     st.error("Este código ya fue usado por otra persona.")
                 else:
                     if not usado:
-                        sb.table("codigos").update(
-                            {"usado": True, "alumno": nombre, "correo": correo}
-                        ).eq("codigo", codigo).execute()
+                        sb.table("codigos").update({
+                            "usado": True,
+                            "alumno": nombre,
+                            "correo": correo,
+                            "dni": dni,
+                            "empresa": empresa,
+                            "cargo": cargo,
+                            "whatsapp": whatsapp,
+                        }).eq("codigo", codigo).execute()
 
                     previo = (sb.table("resultados").select("id")
                               .eq("codigo", codigo).execute().data)
 
                     st.session_state.acceso = True
                     st.session_state.enviado = bool(previo)
+                    st.session_state.empresa = empresa
                     st.session_state.nombre = nombre
+                    st.session_state.dni = dni
+                    st.session_state.cargo = cargo
+                    st.session_state.whatsapp = whatsapp
                     st.session_state.correo = correo
                     st.session_state.codigo = codigo
                     st.session_state.curso = fila["curso"]
@@ -231,6 +245,10 @@ else:
                     "fecha_fin": datetime.now().isoformat(timespec="seconds"),
                     "nombre": st.session_state.nombre,
                     "correo": st.session_state.correo,
+                    "empresa": st.session_state.empresa,
+                    "dni": st.session_state.dni,
+                    "cargo": st.session_state.cargo,
+                    "whatsapp": st.session_state.whatsapp,
                     "curso": st.session_state.curso,
                     "codigo": st.session_state.codigo,
                     "nota": nota,
