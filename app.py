@@ -133,7 +133,17 @@ for clave, valor in {"acceso": False, "ya_vio": False, "enviado": False}.items()
     if clave not in st.session_state:
         st.session_state[clave] = valor
 
-st.image("logo.png", use_container_width=True)
+import base64
+
+with open("logo.png", "rb") as f:
+    logo_b64 = base64.b64encode(f.read()).decode()
+
+st.markdown(
+    f'<div style="background:#FFFFFF; padding:18px; border-radius:10px; text-align:center;">'
+    f'<img src="data:image/png;base64,{logo_b64}" style="max-width:100%; height:auto;">'
+    f'</div>',
+    unsafe_allow_html=True,
+)
 st.markdown('<div class="franja"></div>', unsafe_allow_html=True)
 
 # ---------- Pantalla 1: Ingreso ----------
