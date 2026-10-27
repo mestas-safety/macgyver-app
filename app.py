@@ -32,7 +32,7 @@ st.markdown("""
 
 NOTA_MINIMA = 70
 
-PREGUNTAS = [
+
 PREGUNTAS = [
     {"p": "¿Qué es un peligro?",
      "o": ["Un evento que siempre causa lesiones.",
@@ -121,7 +121,7 @@ PREGUNTAS = [
            "Permitir el ingreso de los trabajadores mientras el operador mantenga contacto visual.",
            "Continuar con la excavación y completar los documentos al finalizar."], "c": 1},
 ]
-]
+
 
 @st.cache_resource
 def conectar():
