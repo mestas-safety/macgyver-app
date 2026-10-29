@@ -323,24 +323,42 @@ if cod_qr:
     st.stop()
 
 # ---------- PORTADA ----------
+LOGOS_EN_BLANCO = True
+
+def logo_b64(ruta):
+    img = Image.open(ruta).convert("RGBA")
+    if LOGOS_EN_BLANCO:
+        alfa = img.split()[3]
+        blanco = Image.new("RGBA", img.size, (255, 255, 255, 255))
+        blanco.putalpha(alfa)
+        img = blanco
+    img.thumbnail((400, 200))
+    buf = io.BytesIO()
+    img.save(buf, "PNG")
+    return base64.b64encode(buf.getvalue()).decode()
+
 def logos_clientes():
     archivos = sorted(glob.glob("cliente_*.png"))
     if not archivos:
         return
-    imgs = ""
+    fondo = "transparent" if LOGOS_EN_BLANCO else "#FFFFFF"
+    celdas = ""
     for a in archivos:
-        with open(a, "rb") as f:
-            b = base64.b64encode(f.read()).decode()
-        imgs += (f'<img src="data:image/png;base64,{b}" '
-                 f'style="height:60px; max-width:140px; object-fit:contain; margin:8px 14px;">')
-    st.markdown(
-        '<p style="text-align:center; font-weight:700; margin-top:2rem;">'
-        'Empresas que ya optimizan su gestión con MACGYVER</p>'
-        '<div style="background:#FFFFFF; border-radius:10px; padding:10px; '
-        'display:flex; flex-wrap:wrap; justify-content:center; align-items:center;">'
-        f'{imgs}</div>',
-        unsafe_allow_html=True,
+        celdas += f'<div class="celda"><img src="data:image/png;base64,{logo_b64(a)}"></div>'
+    html = (
+        '<style>'
+        '.logos-caja{margin-top:2.2rem;}'
+        '.logos-texto{text-align:center;font-weight:700;font-size:1.05rem;margin-bottom:1rem;}'
+        f'.logos-grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;background:{fondo};border-radius:10px;padding:14px;}}'
+        '.celda{height:80px;display:flex;align-items:center;justify-content:center;}'
+        '.celda img{max-height:70px;max-width:100%;object-fit:contain;}'
+        '</style>'
+        '<div class="logos-caja">'
+        '<div class="logos-texto">Ellos ya están optimizando sus tiempos con nuestras soluciones</div>'
+        f'<div class="logos-grid">{celdas}</div>'
+        '</div>'
     )
+    st.markdown(html, unsafe_allow_html=True)
 
 if st.session_state.vista == "portada":
     st.subheader("Plataforma de gestión SSOMA")
