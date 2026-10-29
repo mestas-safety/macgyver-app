@@ -370,7 +370,7 @@ def logos_clientes():
     st.markdown(html, unsafe_allow_html=True)
 
 if st.session_state.vista == "portada":
-    st.subheader("Plataforma de gestión SSOMA")
+    st.subheader("Programación y automatización para SSOMA 4.0")
     st.caption("Elige un módulo. Los marcados con 🔒 se activarán pronto.")
     for clave, texto, activo in MODULOS:
         etiqueta = texto if activo else f"🔒 {texto} · Próximamente"
@@ -379,6 +379,11 @@ if st.session_state.vista == "portada":
             st.session_state.vista = clave
             st.rerun()
     logos_clientes()
+    st.markdown(
+        '<p style="text-align:center; color:#8A8A8A; font-size:0.85rem; margin-top:2rem;">'
+        'Full Stack Developer: Ing. CIP A.M. (Macgyver)</p>',
+        unsafe_allow_html=True,
+    )
     st.stop()
 
 if st.session_state.vista != "induccion":
