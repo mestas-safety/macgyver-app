@@ -374,11 +374,10 @@ if st.session_state.vista == "portada":
     st.caption("Elige un módulo. Los marcados con 🔒 se activarán pronto.")
     for clave, texto, activo in MODULOS:
         etiqueta = texto if activo else f"🔒 {texto} · Próximamente"
-                if st.button(etiqueta, key=f"mod_{clave}", disabled=not activo,
+        if st.button(etiqueta, key=f"mod_{clave}", disabled=not activo,
                      use_container_width=True):
             st.session_state.vista = clave
             st.rerun()
-    logos_clientes()
     st.stop()
 
 if st.session_state.vista != "induccion":
