@@ -37,6 +37,15 @@ st.markdown("""
         background-color: #2A2A2A; color: #8A8A8A; cursor: not-allowed;
     }
     .stButton > button p {font-size: 0.92rem; line-height: 1.35;}
+        div[data-testid="stButton"] {width: 100%;}
+    div[data-testid="stButton"] > button {
+        width: 100%;
+        min-height: 3.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
     h1, h2, h3 {font-weight: 800;}
     h2 {border-left: 6px solid #FFD600; padding-left: 12px;}
     div[role="radiogroup"] {gap: 0.7rem;}
@@ -365,7 +374,8 @@ if st.session_state.vista == "portada":
     st.caption("Elige un módulo. Los marcados con 🔒 se activarán pronto.")
     for clave, texto, activo in MODULOS:
         etiqueta = texto if activo else f"🔒 {texto} · Próximamente"
-        if st.button(etiqueta, key=f"mod_{clave}", disabled=not activo):
+                if st.button(etiqueta, key=f"mod_{clave}", disabled=not activo,
+                     use_container_width=True):
             st.session_state.vista = clave
             st.rerun()
     logos_clientes()
