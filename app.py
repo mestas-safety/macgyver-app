@@ -95,7 +95,7 @@ MODULOS = [
     ("comite", "COMITÉ DE SST (Libro de actas inteligente)", False),
     ("controles", "CONTROLES DE INGENIERÍA (Trazabilidad)", False),
     ("informes", "INFORMES SSOMA INTELIGENTES", False),
-    ("dashboard", "DASHBOARD", False),
+    ("dashboard", "DASHBOARD (Ejemplo para tu empresa)", True),
 ]
 
 PREGUNTAS = [
@@ -385,7 +385,19 @@ if st.session_state.vista == "portada":
         unsafe_allow_html=True,
     )
     st.stop()
-
+if st.session_state.vista == "dashboard":
+    import streamlit.components.v1 as components
+    st.markdown(
+        "<style>.block-container{max-width:1100px !important;}"
+        ".block-container img{max-width:360px !important;}</style>",
+        unsafe_allow_html=True,
+    )
+    if st.button("← Volver al menú"):
+        st.session_state.vista = "portada"
+        st.rerun()
+    with open("dashboard.html", encoding="utf-8") as f:
+        components.html(f.read(), height=2600, scrolling=True)
+    st.stop()
 if st.session_state.vista != "induccion":
     st.info("Este módulo estará disponible pronto.")
     if st.button("← Volver al menú"):
