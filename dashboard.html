@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--y:#FFD600;--o:#FF8A00;--card:#131313;--line:#2b2b2b;--mut:#a3a3a3;--g:#3ddc84;--r:#ff5a4d;--c:#38bdf8}
+*{box-sizing:border-box;margin:0}
+body{background:transparent;color:#fff;font-family:'Segoe UI',Roboto,Arial,sans-serif;padding:4px}
+.num{font-family:'Arial Black','Segoe UI',sans-serif;font-weight:900;color:var(--o);line-height:1}
+.top{display:flex;gap:12px;align-items:stretch;margin-bottom:12px;flex-wrap:wrap}
+.ttl{flex:1;min-width:240px;border-radius:14px;padding:14px 18px;background:repeating-linear-gradient(-45deg,#FFD600 0 16px,#0A0A0A 16px 32px)}
+.ttl b{display:inline-block;background:#0A0A0A;color:var(--y);font-family:'Arial Black',sans-serif;font-size:1.5rem;padding:6px 14px;border-radius:8px}
+.fecha{border:1px solid var(--line);border-radius:14px;padding:10px 18px;display:flex;flex-direction:column;justify-content:center;background:var(--card)}
+.fecha small{color:var(--mut)}.fecha strong{color:var(--o);font-size:1.15rem}
+.demo{width:100%;background:linear-gradient(90deg,#FFD600,#fff3a0,#FFD600);background-size:200% 100%;animation:slide 5s linear infinite;color:#0A0A0A;font-weight:800;text-align:center;padding:10px;border-radius:10px;margin-bottom:12px;font-size:1.02rem}
+.demo small{display:block;font-weight:600;opacity:.75}
+@keyframes slide{to{background-position:-200% 0}}
+.g{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+.card{background:linear-gradient(160deg,#191919,#0f0f0f);border:1px solid var(--line);border-top:3px solid var(--y);border-radius:14px;padding:14px 16px;min-width:0}
+.s3{grid-column:span 3}.s4{grid-column:span 4}.s5{grid-column:span 5}.s6{grid-column:span 6}.s7{grid-column:span 7}
+.t{font-size:.92rem;font-weight:700;color:#e6e6e6;margin-bottom:8px}
+.sub{color:var(--mut);font-size:.8rem;margin-top:4px}
+.hr{display:grid;grid-template-columns:105px 1fr 38px;gap:8px;align-items:center;margin:7px 0;font-size:.78rem;color:#ddd}
+.hr b{text-align:right;color:#fff}
+.tr{height:12px;background:#222;border-radius:6px;overflow:hidden}
+.tr i{display:block;height:100%;width:0;border-radius:6px;transition:width 1.6s cubic-bezier(.2,.8,.2,1)}
+.go .tr i{width:var(--w)}
+.vbs{display:flex;align-items:flex-end;gap:8px;height:190px;padding-top:6px}
+.vb{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px;height:100%;min-width:0}
+.vb b{font-size:.75rem}.vb span{font-size:.68rem;color:var(--mut);text-align:center}
+.vb i{display:block;width:100%;height:0;border-radius:5px 5px 0 0;background:linear-gradient(180deg,var(--y),var(--o));transition:height 1.6s cubic-bezier(.2,.8,.2,1)}
+.go .vb i{height:var(--h)}
+.draw{stroke-dasharray:1;stroke-dashoffset:1}
+.go .draw{animation:draw 2s .3s forwards ease}
+@keyframes draw{to{stroke-dashoffset:0}}
+.dot{opacity:0}.go .dot{animation:pop .4s forwards}
+@keyframes pop{to{opacity:1}}
+.row{display:flex;gap:10px;justify-content:space-around;flex-wrap:wrap;text-align:center}
+.dl{font-size:.8rem;color:var(--mut);margin-top:2px}
+.hh{display:flex;align-items:center;gap:6px}
+.hh svg{width:132px;flex:none}
+.pb{height:10px;background:#222;border-radius:6px;margin-top:10px;overflow:hidden}
+.pb i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--y),var(--o));border-radius:6px;transition:width 2s ease}
+.go .pb i{width:94%}
+.ring{width:128px;height:128px;border-radius:50%;border:5px solid var(--g);display:grid;place-items:center;margin:6px auto 0;animation:pulse 2.2s infinite}
+.ring .num{color:var(--g);font-size:2.6rem}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(61,220,132,.5)}100%{box-shadow:0 0 0 24px rgba(61,220,132,0)}}
+.pick{transform-box:view-box;transform-origin:57px 48px;animation:swing 1.5s ease-in-out infinite}
+@keyframes swing{0%,18%{transform:rotate(-48deg)}44%{transform:rotate(85deg)}54%{transform:rotate(80deg)}100%{transform:rotate(-48deg)}}
+.dust circle{opacity:0;animation:dust 1.5s ease-out infinite}
+.dust circle:nth-child(2){animation-delay:.04s}.dust circle:nth-child(3){animation-delay:.08s}
+@keyframes dust{0%,43%{opacity:0;transform:translate(0,0)}48%{opacity:1}75%{opacity:0;transform:translate(8px,-16px)}100%{opacity:0}}
+.s12{grid-column:span 12}
+.sec{grid-column:span 12;display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.1rem;margin-top:10px}
+.sec::after{content:"";flex:1;height:8px;border-radius:3px;background:repeating-linear-gradient(-45deg,#FFD600 0 8px,transparent 8px 16px);opacity:.6}
+.ar{display:flex;align-items:center;gap:10px}
+.ar svg{width:118px;flex:none}
+.ar .num{font-size:2.4rem}
+.sp circle{animation:spark .7s ease-out infinite}
+@keyframes spark{0%{opacity:1;transform:translate(0,0)}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.glow{animation:glow .16s infinite alternate}
+@keyframes glow{from{opacity:.5}to{opacity:1}}
+.cab{transform-box:fill-box;transform-origin:50% 0;animation:cab 4s ease-in-out infinite alternate}
+.load{animation:load 4s ease-in-out infinite alternate}
+@keyframes cab{to{transform:scaleY(var(--k,.4))}}
+@keyframes load{to{transform:translateY(var(--m,-18px))}}
+.dig{transform-box:view-box;transform-origin:46px 48px;animation:dig 2.6s ease-in-out infinite alternate}
+@keyframes dig{from{transform:rotate(-12deg)}to{transform:rotate(15deg)}}
+.dive{animation:dive 4.5s ease-in-out infinite alternate}
+@keyframes dive{from{transform:translateY(0)}to{transform:translateY(33px)}}
+.shackle{transform-box:view-box;transform-origin:62px 40px;animation:shackle 3.6s ease-in-out infinite}
+@keyframes shackle{0%,35%{transform:translateY(0) rotate(0)}50%,85%{transform:translateY(-6px) rotate(28deg)}100%{transform:translateY(0) rotate(0)}}
+.led{animation:led 3.6s steps(1) infinite}
+@keyframes led{0%{fill:#ff3b30}45%{fill:#3ddc84}88%{fill:#ff3b30}}
+.walk{animation:walk 5s ease-in-out infinite alternate}
+@keyframes walk{from{transform:translateX(-24px)}to{transform:translateX(24px)}}
+.lm{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.lc{display:flex;align-items:center;gap:10px;background:#0d0d0d;border:1px solid var(--line);border-radius:12px;padding:10px}
+.lc svg{width:60px;flex:none}
+.lc .n{font-size:.8rem;color:#ddd}
+.lc .p{font-family:'Arial Black',sans-serif;font-size:1.5rem;color:var(--bc)}
+.lc .pb i{background:var(--bc)}
+.go .lc .pb i,.go .am .pb i{width:var(--w)}
+.amb{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.amb>svg{width:175px;flex:none;margin:0 auto}
+.am{flex:1;min-width:260px;display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.am>div{background:#0d0d0d;border:1px solid var(--line);border-radius:12px;padding:10px}
+.am .num{font-size:1.7rem;color:var(--g)}
+.am .l{display:block;font-size:.76rem;color:#cfcfcf;margin-top:5px}
+.rot{animation:rot 9s linear infinite}
+@keyframes rot{to{transform:translateX(-80px)}}
+@media(max-width:860px){.g>.card{grid-column:span 12}.hr{grid-template-columns:95px 1fr 36px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}}
+</style></head><body>
+
+<div class="top">
+  <div class="ttl"><b>Dashboard SSOMA</b></div>
+  <div class="fecha"><small>Fecha</small><strong id="fecha"></strong></div>
+</div>
+<div class="demo">Este podría ser el Dashboard SSOMA para tu empresa<small>Datos de ejemplo. En tu proyecto se alimentan solos con tus reportes diarios.</small></div>
+
+<div class="g">
+  <div class="card s4"><div class="t">Personal total</div>
+    <div class="num" style="font-size:2.6rem"><span class="cnt" data-to="730">0</span></div>
+    <div id="pers" style="margin-top:8px"></div></div>
+
+  <div class="card s5"><div class="t">Horas-hombre trabajadas</div>
+    <div class="hh">
+      <div><div class="num" style="font-size:2.6rem"><span class="cnt" data-to="234000">0</span></div>
+        <div class="sub">Meta del mes: 250,000 h</div>
+        <div class="pb"><i></i></div></div>
+      <svg viewBox="0 0 120 112" aria-label="Obrero trabajando con un pico">
+        <path d="M78,104 Q96,84 118,104 Z" fill="#5b4a2b"/>
+        <line x1="6" y1="104" x2="118" y2="104" stroke="#444" stroke-width="2"/>
+        <line x1="53" y1="74" x2="46" y2="103" stroke="#d9d9d9" stroke-width="9" stroke-linecap="round"/>
+        <line x1="62" y1="74" x2="70" y2="103" stroke="#bdbdbd" stroke-width="9" stroke-linecap="round"/>
+        <rect x="47" y="40" width="20" height="36" rx="7" fill="#ececec"/>
+        <rect x="47" y="54" width="20" height="4" fill="#FFD600"/><rect x="47" y="64" width="20" height="3" fill="#FFD600"/>
+        <circle cx="57" cy="31" r="8.5" fill="#ececec"/>
+        <path d="M47,30 A10,10 0 0 1 67,30 Z" fill="#FFD600"/><rect x="45" y="29" width="24" height="3" rx="1.5" fill="#FFD600"/>
+        <g class="pick">
+          <line x1="57" y1="48" x2="82" y2="42" stroke="#ececec" stroke-width="7" stroke-linecap="round"/>
+          <line x1="70" y1="60" x2="100" y2="16" stroke="#8a5a2b" stroke-width="4" stroke-linecap="round"/>
+          <path d="M86,12 Q100,4 116,22" fill="none" stroke="#c9c9c9" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <g class="dust" fill="#cdb98a"><circle cx="92" cy="96" r="3"/><circle cx="98" cy="94" r="2.2"/><circle cx="88" cy="94" r="2"/></g>
+      </svg>
+    </div></div>
+
+  <div class="card s3"><div class="t">Días sin accidentes</div>
+    <div class="ring"><span class="num"><span class="cnt" data-to="128">0</span></span></div>
+    <div class="sub" style="text-align:center">Récord del proyecto</div></div>
+
+  <div class="card s7"><div class="t">Actos y condiciones subestándar</div>
+    <div class="num" style="font-size:2.2rem"><span class="cnt" data-to="445">0</span></div>
+    <div class="row"><div><div id="d1"></div></div><div><div id="d2"></div></div><div><div id="d3"></div></div></div></div>
+
+  <div class="card s5"><div class="t">Índice de frecuencia (LTIF)</div><div id="ltif"></div>
+    <div class="sub">Baja por tercer año consecutivo</div></div>
+
+  <div class="card s6"><div class="t">Observaciones de seguridad</div>
+    <div class="num" style="font-size:2.2rem"><span class="cnt" data-to="415">0</span></div>
+    <div class="vbs" id="obs"></div></div>
+
+  <div class="card s6"><div class="t">Horas de capacitación</div>
+    <div class="num" style="font-size:2.2rem"><span class="cnt" data-to="927">0</span></div>
+    <div id="cap" style="margin-top:6px"></div></div>
+
+  <div class="card s6"><div class="t">Índice de severidad</div><div id="sev"></div></div>
+
+  <div class="card s6"><div class="t">Cumplimiento de inspecciones</div>
+    <div class="row" style="align-items:center"><div id="d4"></div>
+      <div style="text-align:left"><div class="num" style="font-size:1.8rem;color:var(--g)">23 de 25</div><div class="sub">inspecciones cerradas<br>este mes</div></div></div></div>
+
+  <div class="sec">Trabajos de alto riesgo</div>
+
+  <div class="card s4"><div class="t">N° de OPT en trabajos en caliente</div><div class="ar">
+    <svg viewBox="0 0 100 80" aria-label="Soldador soldando">
+      <rect x="6" y="68" width="88" height="6" fill="#555"/>
+      <line x1="24" y1="56" x2="21" y2="68" stroke="#cfcfcf" stroke-width="6" stroke-linecap="round"/>
+      <line x1="35" y1="56" x2="40" y2="68" stroke="#b5b5b5" stroke-width="6" stroke-linecap="round"/>
+      <path d="M21,34 L40,34 L43,58 L22,58 Z" fill="#ececec"/>
+      <circle cx="31" cy="25" r="7.5" fill="#ececec"/>
+      <path d="M23,24 A8.5,8.5 0 0 1 40,24 Z" fill="#FFD600"/>
+      <rect x="34" y="21" width="9" height="9" rx="2" fill="#1b1b1b" stroke="#aaa"/>
+      <line x1="38" y1="40" x2="62" y2="58" stroke="#ececec" stroke-width="5" stroke-linecap="round"/>
+      <line x1="62" y1="58" x2="72" y2="67" stroke="#999" stroke-width="2"/>
+      <circle class="glow" cx="73" cy="67" r="6" fill="#fff3a0"/>
+      <g class="sp" fill="#FF8A00">
+        <circle cx="73" cy="66" r="1.7" style="--dx:-18px;--dy:-20px"/><circle cx="73" cy="66" r="1.5" style="--dx:-4px;--dy:-26px;animation-delay:.12s"/>
+        <circle cx="73" cy="66" r="1.7" style="--dx:14px;--dy:-22px;animation-delay:.25s"/><circle cx="73" cy="66" r="1.4" style="--dx:22px;--dy:-8px;animation-delay:.38s"/>
+        <circle cx="73" cy="66" r="1.5" style="--dx:8px;--dy:-30px;animation-delay:.5s"/>
+      </g>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="48">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="card s4"><div class="t">N° de OPT de izajes</div><div class="ar">
+    <svg viewBox="0 0 100 80" aria-label="Torre grúa izando una carga">
+      <rect x="36" y="74" width="26" height="4" fill="#555"/>
+      <g stroke="#FFD600" stroke-width="2" fill="none"><line x1="44" y1="74" x2="44" y2="12"/><line x1="54" y1="74" x2="54" y2="12"/><path d="M44,74 L54,62 L44,50 L54,38 L44,26 L54,14"/><path d="M54,74 L44,62 L54,50 L44,38 L54,26"/></g>
+      <line x1="49" y1="4" x2="12" y2="10" stroke="#ddd"/><line x1="49" y1="4" x2="92" y2="10" stroke="#ddd"/>
+      <rect x="8" y="10" width="88" height="4" fill="#FFD600"/><rect x="8" y="14" width="12" height="9" fill="#777"/>
+      <rect x="42" y="4" width="14" height="6" fill="#FFD600"/><rect x="76" y="14" width="6" height="3" fill="#333"/>
+      <rect class="cab" x="78.2" y="17" width="1.6" height="30" fill="#ddd"/>
+      <g class="load"><rect x="70" y="47" width="18" height="12" fill="#8a8a8a" stroke="#555"/></g>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="36">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="card s4"><div class="t">N° de OPT en espacios confinados</div><div class="ar">
+    <svg viewBox="0 0 100 80" aria-label="Obrero ingresando a una cisterna">
+      <rect x="6" y="44" width="88" height="33" rx="9" fill="#10232d" stroke="#38bdf8" stroke-width="2"/>
+      <circle class="glow" cx="20" cy="64" r="3" fill="#ff5a4d"/><circle class="glow" cx="82" cy="60" r="2.5" fill="#ff5a4d" style="animation-delay:.1s"/>
+      <g class="dive">
+        <line x1="48" y1="36" x2="48" y2="28" stroke="#cfcfcf" stroke-width="3.4"/><line x1="52" y1="36" x2="52" y2="28" stroke="#b5b5b5" stroke-width="3.4"/>
+        <rect x="45" y="17" width="10" height="12" rx="2" fill="#ececec"/><rect x="55.5" y="17" width="4" height="11" rx="2" fill="#38bdf8"/>
+        <circle cx="50" cy="13" r="4.5" fill="#ececec"/><path d="M45.5,12 A4.5,4.5 0 0 1 54.5,12 Z" fill="#FFD600"/>
+        <rect x="50.5" y="11.5" width="4" height="3.5" rx="1" fill="#222"/>
+      </g>
+      <rect x="0" y="34" width="40" height="10" fill="#6b5430"/><rect x="62" y="34" width="38" height="10" fill="#6b5430"/>
+      <rect x="40" y="34" width="2" height="10" fill="#999"/><rect x="60" y="34" width="2" height="10" fill="#999"/>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="12">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="card s4"><div class="t">N° de OPT en excavaciones</div><div class="ar">
+    <svg viewBox="0 0 100 80" aria-label="Excavadora excavando">
+      <line x1="4" y1="72" x2="96" y2="72" stroke="#555" stroke-width="2"/>
+      <path d="M70,72 Q84,58 98,72 Z" fill="#6b5430"/>
+      <rect x="12" y="62" width="44" height="10" rx="5" fill="#2d2d2d"/>
+      <circle cx="20" cy="67" r="3" fill="#555"/><circle cx="34" cy="67" r="3" fill="#555"/><circle cx="48" cy="67" r="3" fill="#555"/>
+      <rect x="18" y="44" width="30" height="18" rx="3" fill="#FFD600"/><rect x="22" y="47" width="12" height="9" fill="#bfe9ff"/>
+      <g class="dig">
+        <line x1="46" y1="48" x2="74" y2="34" stroke="#FFD600" stroke-width="6" stroke-linecap="round"/>
+        <line x1="74" y1="34" x2="84" y2="56" stroke="#e6c200" stroke-width="5" stroke-linecap="round"/>
+        <path d="M80,54 L92,54 L90,64 L82,66 Z" fill="#8a8a8a"/>
+      </g>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="27">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="card s4"><div class="t">N° de OPT de LOTO</div><div class="ar">
+    <svg viewBox="0 0 100 80" aria-label="Candado LOTO abriéndose y cerrándose">
+      <circle class="led" cx="84" cy="12" r="4" fill="#ff3b30"/>
+      <g class="shackle"><path d="M38,40 V28 a12,12 0 0 1 24,0 V40" fill="none" stroke="#d0d0d0" stroke-width="5.5" stroke-linecap="round"/></g>
+      <rect x="28" y="38" width="44" height="34" rx="6" fill="#ff3b30"/>
+      <circle cx="50" cy="52" r="5" fill="#2b0a08"/><rect x="48" y="54" width="4" height="10" rx="1.5" fill="#2b0a08"/>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="41">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="card s4"><div class="t">N° de OPT en trabajos en altura</div><div class="ar">
+    <svg viewBox="0 0 100 84" aria-label="Obrero con arnés en altura">
+      <line x1="12" y1="8" x2="88" y2="8" stroke="#aaa" stroke-width="1.6" stroke-dasharray="3 2"/>
+      <rect x="8" y="44" width="84" height="5" fill="#8a8a8a"/>
+      <line x1="16" y1="49" x2="16" y2="82" stroke="#666" stroke-width="3"/><line x1="84" y1="49" x2="84" y2="82" stroke="#666" stroke-width="3"/>
+      <line x1="16" y1="49" x2="84" y2="82" stroke="#444"/><line x1="4" y1="82" x2="96" y2="82" stroke="#555" stroke-width="2"/>
+      <text x="90" y="72" font-size="8" fill="#FFD600" text-anchor="end">12 m</text>
+      <g class="walk">
+        <circle cx="50" cy="8" r="2.6" fill="#FFD600"/><line x1="56" y1="27" x2="50" y2="8" stroke="#FF8A00" stroke-width="1.6"/>
+        <line x1="47" y1="35" x2="47" y2="44" stroke="#cfcfcf" stroke-width="3.4"/><line x1="53" y1="35" x2="53" y2="44" stroke="#b5b5b5" stroke-width="3.4"/>
+        <rect x="44" y="24" width="12" height="11" rx="3" fill="#ececec"/>
+        <line x1="45" y1="25" x2="55" y2="34" stroke="#FF8A00" stroke-width="1.6"/><line x1="55" y1="25" x2="45" y2="34" stroke="#FF8A00" stroke-width="1.6"/>
+        <circle cx="50" cy="19" r="4.5" fill="#ececec"/><path d="M45.5,18 A4.5,4.5 0 0 1 54.5,18 Z" fill="#FFD600"/>
+      </g>
+    </svg>
+    <div><div class="num"><span class="cnt" data-to="112">0</span></div><div class="sub">permisos en el mes</div></div></div></div>
+
+  <div class="sec">Desempeño de la línea de mando</div>
+  <div class="card s12"><div class="t">Cumplimiento de sus compromisos de seguridad</div><div class="lm" id="lm"></div></div>
+
+  <div class="sec">Gestión ambiental</div>
+  <div class="card s12"><div class="amb">
+    <svg viewBox="0 0 140 130" aria-label="Planeta en construcción">
+      <defs><clipPath id="gl"><circle cx="62" cy="84" r="40"/></clipPath>
+      <path id="ct" d="M8,70 q10,-16 26,-6 q8,10 -2,18 q-16,8 -24,-12z M46,92 q13,-6 20,4 q-2,13 -15,11z M32,52 q11,-9 20,0 q-4,9 -18,6z M58,64 q8,-8 18,-2 q3,9 -6,13 q-10,2 -12,-11z"/></defs>
+      <circle cx="62" cy="84" r="40" fill="#0e5a7a"/>
+      <g clip-path="url(#gl)"><g class="rot" fill="#3ddc84"><use href="#ct" x="22"/><use href="#ct" x="102"/></g></g>
+      <circle cx="62" cy="84" r="40" fill="none" stroke="#38bdf8" stroke-width="2"/>
+      <rect x="60" y="6" width="4" height="40" fill="#FFD600"/><rect x="26" y="6" width="80" height="3.5" fill="#FFD600"/>
+      <rect x="22" y="9" width="10" height="7" fill="#777"/><line x1="62" y1="2" x2="30" y2="7" stroke="#ddd"/><line x1="62" y1="2" x2="100" y2="7" stroke="#ddd"/>
+      <rect class="cab" style="--k:.5" x="96.2" y="9.5" width="1.6" height="20" fill="#ddd"/>
+      <g class="load" style="--m:-10px"><path d="M97,30 q10,-4 13,6 q-10,5 -13,-6z" fill="#3ddc84"/></g>
+    </svg>
+    <div class="am">
+      <div><div class="num"><span class="cnt" data-to="14.5" data-dec="1" data-suf=" t">0</span></div><span class="l">Residuos sólidos dispuestos con EORS</span></div>
+      <div><div class="num"><span class="cnt" data-to="23.4" data-dec="1" data-suf=" t">0</span></div><span class="l">Residuos peligrosos con manifiesto</span></div>
+      <div><div class="num"><span class="cnt" data-to="12" data-suf=" t">0</span></div><span class="l">Cantidad de plástico reciclado</span></div>
+      <div><div class="num"><span class="cnt" data-to="80" data-suf="%">0</span></div><span class="l">Hojas SDS difundidas</span><div class="pb"><i style="--w:80%"></i></div></div>
+      <div><div class="num"><span class="cnt" data-to="95" data-suf="%">0</span></div><span class="l">Kits antiderrames operativos</span><div class="pb"><i style="--w:95%"></i></div></div>
+      <div><div class="num" style="color:var(--c)"><span class="cnt" data-to="128" data-suf=" gal">0</span></div><span class="l">Agua para regado de vías</span></div>
+    </div>
+  </div></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+document.getElementById('fecha').textContent=new Date().toLocaleDateString('es-PE',{day:'numeric',month:'long',year:'numeric'});
+function count(el){const to=+el.dataset.to,d=+el.dataset.dec||0,u=el.dataset.suf||'',t=1800,s=performance.now();(function f(n){const p=Math.min((n-s)/t,1),e=1-Math.pow(1-p,3);el.textContent=(to*e).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})+u;if(p<1)requestAnimationFrame(f)})(s)}
+function hbars(id,rows,max,color){$(id).innerHTML=rows.map(r=>`<div class="hr"><span>${r[0]}</span><div class="tr"><i style="--w:${r[1]/max*100}%;background:${color||'linear-gradient(90deg,#FFD600,#FF8A00)'}"></i></div><b>${r[1]}</b></div>`).join('')}
+function vbars(id,rows,max){$(id).innerHTML=rows.map(r=>`<div class="vb"><b>${r[1]}</b><i style="--h:${r[1]/max*125}px"></i><span>${r[0]}</span></div>`).join('')}
+function line(id,labels,vals,color,max){
+  const W=300,H=140,px=26,py=22,n=vals.length;
+  const X=i=>px+i*(W-2*px)/(n-1),Y=v=>H-py-(v/max)*(H-2*py-8);
+  const pts=vals.map((v,i)=>[X(i),Y(v)]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join('');
+  let h=`<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  for(let k=0;k<=3;k++){const y=py+k*(H-2*py)/3;h+=`<line x1="${px}" x2="${W-px}" y1="${y}" y2="${y}" stroke="#262626"/>`}
+  h+=`<path d="${d}" pathLength="1" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="draw"/>`;
+  pts.forEach((p,i)=>{const dl=(.9+i*.28)+'s';
+    h+=`<circle cx="${p[0]}" cy="${p[1]}" r="4.5" fill="${color}" class="dot" style="animation-delay:${dl}"/><text x="${p[0]}" y="${p[1]-10}" fill="#fff" font-size="11" font-weight="700" text-anchor="middle" class="dot" style="animation-delay:${dl}">${vals[i]}</text><text x="${p[0]}" y="${H-4}" fill="#a3a3a3" font-size="10" text-anchor="middle">${labels[i]}</text>`});
+  $(id).innerHTML=h+'</svg>';
+}
+function donut(id,pct,color,num,lab){const R=42,C=2*Math.PI*R;
+  $(id).innerHTML=`<svg viewBox="0 0 100 100" width="118"><circle cx="50" cy="50" r="${R}" fill="none" stroke="#262626" stroke-width="10"/><circle class="dn" cx="50" cy="50" r="${R}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" transform="rotate(-90 50 50)" style="transition:stroke-dashoffset 1.9s ease .3s" data-off="${C*(1-pct/100)}"/><text x="50" y="56" text-anchor="middle" fill="#fff" font-size="20" font-weight="800" font-family="Arial Black,Arial">${num}</text></svg><div class="dl">${lab}</div>`}
+
+hbars('#pers',[['Contratista A',100],['Contratista B',400],['Contratista C',230]],400);
+donut('#d1',55,'#FFD600','245','Actos subestándar');
+donut('#d2',45,'#ff5a4d','200','Condiciones subestándar');
+donut('#d3',78,'#3ddc84','78%','Casos ya cerrados');
+donut('#d4',92,'#3ddc84','92%','');
+line('#ltif',['2022','2023','2024','2025','2026'],[0.3,0.2,0.1,0.1,0],'#FF8A00',0.35);
+line('#sev',['2022','2023','2024','2025','2026'],[4,3.5,2.5,2,1.5],'#38bdf8',4.5);
+vbars('#obs',[['EPP',90],['Orden',60],['Altura',45],['Herram.',40],['Excav.',30],['Eléct.',25],['Izaje',15],['Otros',110]],110);
+hbars('#cap',[['Permisos de trabajo',230],['Soldadura y corte',170],['Trabajo en altura',140],['Espacios confinados',110],['Izaje',97],['Andamios',90],['Excavación',90]],230);
+
+const LM=[['Gerente de proyecto',96],['Residente de obra',92],['Jefe SSOMA',98],['Jefe de Calidad',88],['Jefe de OT',85],['Ingeniero de producción I',91],['Capataz de carpintería',79],['Capataz de acero',83],['Capataz de movimiento de tierras',74]];
+$('#lm').innerHTML=LM.map((r,i)=>{const c=r[1]>=90?'#3ddc84':r[1]>=80?'#FFD600':'#FF8A00',d=(.5+i*.15)+'s';
+return `<div class="lc" style="--bc:${c}"><svg viewBox="0 0 62 54" aria-hidden="true"><path d="M4,52 Q6,34 24,34 Q42,34 44,52 Z" fill="#ececec"/><path d="M14,52 L17,38 M34,52 L31,38" stroke="#FFD600" stroke-width="3"/><circle cx="24" cy="23" r="9" fill="#ececec"/><path d="M14,21 A10,10 0 0 1 34,21 Z" fill="#FFD600"/><rect x="12" y="20" width="24" height="3.5" rx="1.7" fill="#FFD600"/><circle class="dot" cx="47" cy="38" r="11" fill="${c}" style="animation-delay:${d}"/><path class="draw" pathLength="1" d="M41,38 l4,4 l8,-9" fill="none" stroke="#0A0A0A" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" style="animation-delay:${d};animation-duration:.8s"/></svg><div style="flex:1;min-width:0"><div class="n">${r[0]}</div><div class="p"><span class="cnt" data-to="${r[1]}" data-suf="%">0</span></div><div class="pb"><i style="--w:${r[1]}%"></i></div></div></div>`}).join('');
+
+setTimeout(()=>{document.body.classList.add('go');
+  document.querySelectorAll('.cnt').forEach(count);
+  document.querySelectorAll('.dn').forEach(c=>c.style.strokeDashoffset=c.dataset.off);
+},250);
+</script>
+</body></html>
