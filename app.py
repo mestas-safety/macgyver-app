@@ -8,7 +8,7 @@ import qrcode
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 from supabase import create_client
-
+from examen_pdf import paginas_examen
 st.set_page_config(
     page_title="MACGYVER | Seguridad en Construcción",
     page_icon="logo.png",
@@ -280,8 +280,9 @@ def generar_certificado(dat):
     draw.rectangle([c * s for c in QR_CAJA], fill="white")
     img.paste(qimg, (int(QR_POS[0] * s), int(QR_POS[1] * s)))
 
+    extra = paginas_examen(W, H, dat, PREGUNTAS)
     buf = io.BytesIO()
-    img.save(buf, "PDF", resolution=W / 8.27)
+    img.save(buf, "PDF", resolution=W / 8.27, save_all=True, append_images=extra)
     return buf.getvalue()
 
 @st.cache_resource
@@ -422,6 +423,7 @@ def mostrar_resultado(r, duracion, titulo):
             "nota": f"{correctas}/{total} ({r['nota']}%)",
             "fecha": fecha,
             "cert": r["cert_codigo"],
+                        "respuestas": r.get("respuestas"),
         })
         st.download_button("Descargar mi certificado (PDF)", data=pdf,
                            file_name=f"certificado_{r['cert_codigo']}.pdf",
