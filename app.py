@@ -212,13 +212,14 @@ def fuente(tam):
 # (x_inicio, y_de_la_linea, x_fin, tamaño_letra) sobre plantilla de 1623 px
 REF_W = 1623
 CAMPOS = {
-    "tema":     (528, 650, 1512, 34),
-    "duracion": (528, 759, 1512, 44),
-    "empresa":  (528, 872, 1512, 44),
-    "nombre":   (626, 992, 1512, 44),
-    "dni":      (528, 1118, 1512, 44),
-    "cargo":    (530, 1233, 1512, 44),
-    "nota":     (528, 1361, 1512, 44),
+    "tema":     (528, 627, 1512, 34),
+    "duracion": (528, 726, 1512, 44),
+    "empresa":  (528, 829, 1512, 44),
+    "proyecto": (528, 933, 1512, 36),
+    "nombre":   (626, 1042, 1512, 44),
+    "dni":      (528, 1153, 1512, 44),
+    "cargo":    (530, 1254, 1512, 44),
+    "nota":     (528, 1367, 1512, 44),
     "fecha":    (298, 1545, 795, 34),
     "cert":     (1010, 1545, 1503, 28),
 }
@@ -265,6 +266,9 @@ def generar_certificado(dat):
     escribir("tema", dat["tema"], dos_lineas=True)
     escribir("duracion", dat["duracion"])
     escribir("empresa", dat["empresa"].upper())
+    escribir("proyecto", dat.get("proyecto") or "-", dos_lineas=True)
+    draw.text((219.5 * s, 922.9 * s), "PROYECTO:", font=fuente(int(32 * s)),
+              fill=(10, 10, 10), anchor="ls")
     escribir("nombre", dat["nombre"].upper())
     escribir("dni", dat["dni"])
     escribir("cargo", dat["cargo"].upper())
@@ -417,6 +421,7 @@ def mostrar_resultado(r, duracion, titulo):
             "tema": titulo,
             "duracion": duracion,
             "empresa": r["empresa"],
+            "proyecto": r.get("proyecto") or st.session_state.get("proyecto", ""),
             "nombre": r["nombre"],
             "dni": r["dni"],
             "cargo": r["cargo"],
@@ -444,6 +449,7 @@ if not st.session_state.acceso:
 
     st.subheader("Ingreso a Inducción")
     empresa = st.text_input("Empresa").strip()
+    proyecto = st.text_input("Proyecto").strip()
     nombre = st.text_input("Apellidos y Nombres (completos)").strip()
     dni = st.text_input("DNI").strip()
     cargo = st.text_input("Cargo").strip()
@@ -452,7 +458,7 @@ if not st.session_state.acceso:
     codigo = st.text_input("Código de acceso").strip().upper()
 
     if st.button("Ingresar"):
-        if not all([empresa, nombre, dni, cargo, whatsapp, correo, codigo]):
+        if not all([empresa, proyecto, nombre, dni, cargo, whatsapp, correo, codigo]):
             st.warning("Completa todos los campos.")
         elif not dni.isdigit() or len(dni) != 8:
             st.warning("El DNI debe tener 8 números.")
@@ -475,6 +481,7 @@ if not st.session_state.acceso:
                             "correo": correo,
                             "dni": dni,
                             "empresa": empresa,
+                            "proyecto": proyecto,
                             "cargo": cargo,
                             "whatsapp": whatsapp,
                         }).eq("codigo", codigo).execute()
@@ -486,6 +493,7 @@ if not st.session_state.acceso:
                     st.session_state.acceso = True
                     st.session_state.resultado = previo[0] if previo else None
                     st.session_state.empresa = empresa
+                    st.session_state.proyecto = proyecto
                     st.session_state.nombre = nombre
                     st.session_state.dni = dni
                     st.session_state.cargo = cargo
@@ -547,6 +555,7 @@ else:
                     "nombre": st.session_state.nombre,
                     "correo": st.session_state.correo,
                     "empresa": st.session_state.empresa,
+                    "proyecto": st.session_state.proyecto,
                     "dni": st.session_state.dni,
                     "cargo": st.session_state.cargo,
                     "whatsapp": st.session_state.whatsapp,
