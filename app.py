@@ -9,6 +9,7 @@ import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 from supabase import create_client
 from examen_pdf import paginas_examen
+from checklist import mostrar_checklist, verificar_informe
 st.set_page_config(
     page_title="MACGYVER | Seguridad en Construcción",
     page_icon="logo.png",
@@ -84,6 +85,7 @@ def ahora():
 # (clave, texto del botón, ¿activo?)
 MODULOS = [
     ("induccion", f"INDUCCIÓN SSOMA (Art. 52 del {DS})", True),
+    ("checklist_pre", "CHECKLIST PREOPERACIONAL (Verifica si tienes lo necesario para empezar tu proyecto)", True),
     ("capacitaciones", f"CAPACITACIONES (Art. 54 del {DS})", False),
     ("competencias", "COMPETENCIAS: Herramientas de poder / Equipos menores / Línea amarilla-blanca", False),
     ("emergencias", f"PREPARACIÓN Y RESPUESTA A EMERGENCIAS (Art. 47 del {DS})", False),
@@ -301,8 +303,10 @@ for clave, valor in {"acceso": False, "ya_vio": False, "resultado": None}.items(
 
 # Link de siempre -> Inducción directa. Link con ?m=menu -> portada.
 if "vista" not in st.session_state:
-    st.session_state.vista = (
-        "portada" if st.query_params.get("m") == "menu" else "induccion")
+    _m = st.query_params.get("m")
+    st.session_state.vista = ("portada" if _m == "menu"
+                              else "checklist_pre" if _m == "checklist"
+                              else "induccion")
 
 # ---------- Logo ----------
 with open("logo.png", "rb") as f:
@@ -317,6 +321,10 @@ st.markdown(
 st.markdown('<div class="franja"></div>', unsafe_allow_html=True)
 
 # ---------- Verificación por QR ----------
+cod_inf = st.query_params.get("i")
+if cod_inf:
+    verificar_informe(sb, cod_inf)
+    st.stop()
 cod_qr = st.query_params.get("v")
 if cod_qr:
     r = (sb.table("resultados").select("nombre,curso,fecha_fin")
@@ -389,6 +397,9 @@ if st.session_state.vista == "portada":
         'Full Stack Developer: Ing. CIP A.M. (Macgyver)</p>',
         unsafe_allow_html=True,
     )
+    st.stop()
+if st.session_state.vista == "checklist_pre":
+    mostrar_checklist(sb, ahora, BASE_URL)
     st.stop()
 if st.session_state.vista == "dashboard":
     import streamlit.components.v1 as components
