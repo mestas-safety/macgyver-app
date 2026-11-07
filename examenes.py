@@ -317,3 +317,44 @@ EXAMENES = {
         "preguntas": leer_examen(EXCAVACIONES),
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# Catálogo del botón CAPACITACIONES. (clave del curso, nombre en el botón)
+# La clave debe coincidir con la columna `curso` de Supabase.
+# Un botón se activa solo cuando su clave existe en EXAMENES (arriba).
+# ---------------------------------------------------------------------------
+ESPECIFICAS = [
+    ("trabajos_altura", "Trabajos en altura"),
+    ("excavaciones", "Excavación de zanjas"),
+    ("espacio_confinado", "Trabajos en espacio confinado"),
+    ("izaje", "Operaciones de izaje"),
+    ("trabajos_caliente", "Trabajos en caliente"),
+    ("temperaturas_extremas", "Trabajos en temperaturas extremas"),
+    ("energia_electrica", "Trabajos con energía eléctrica"),
+    ("loto", "Sistema de bloqueo, rotulado o etiquetado (LOTO)"),
+    ("ergonomia", "Ergonomía"),
+]
+
+OTRAS = [
+    ("interaccion_hombre_maquina", "Interacción hombre-máquina"),
+    ("iperc", "IPERC"),
+    ("icam", "Investigación de accidentes metodología ICAM"),
+    ("mapa_riesgos_evacuacion", "Mapa de riesgos y evacuación"),
+    ("codigo_colores_senales", "Código de colores y señales"),
+    ("manejo_defensivo", "Manejo defensivo"),
+    ("liderazgo_visible_vfl", "Liderazgo visible en seguridad (VFL)"),
+    ("higiene_ocupacional", "Higiene ocupacional"),
+    ("uso_mantenimiento_epp", "Uso y mantenimiento de EPP"),
+    ("sbc", "Seguridad basada en el comportamiento (SBC)"),
+    ("segregacion_residuos", "Segregación de residuos sólidos"),
+    ("aspectos_ambientales", "Aspectos ambientales significativos"),
+    ("gestion_rcd", "Gestión de RCD en obras"),
+    ("materiales_peligrosos", "Materiales peligrosos"),
+    ("brigada_primeros_auxilios", "Formación de brigadista de primeros auxilios"),
+    ("brigada_incendios", "Formación de brigadista de lucha contra incendios"),
+    ("brigada_evacuacion_rescate", "Formación de brigadista de evacuación y rescate"),
+    ("brigada_materiales_peligrosos", "Formación de brigadista de materiales peligrosos"),
+    ("funciones_comite_sst", "Funciones del Comité/Supervisor de SST"),
+    ("funciones_comite_tecnico", "Funciones del Comité Técnico de Coordinación de SST"),
+]

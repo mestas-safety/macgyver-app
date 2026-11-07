@@ -11,7 +11,7 @@ from supabase import create_client
 
 from checklist import mostrar_checklist, verificar_informe
 from examen_pdf import paginas_examen
-from examenes import EXAMENES
+from examenes import EXAMENES, ESPECIFICAS, OTRAS
 
 st.set_page_config(
     page_title="MACGYVER | Seguridad en Construcción",
@@ -216,13 +216,19 @@ for clave, valor in {"acceso": False, "ya_vio": False, "resultado": None}.items(
         st.session_state[clave] = valor
 
 # Link de siempre -> Inducción. ?m=menu -> portada. ?m=checklist -> checklist.
-# ?m=capacitacion -> capacitaciones.
+# ?m=capacitacion -> menú de capacitaciones.
+# ?m=capacitacion&c=excavaciones -> ingreso directo a ese curso.
 if "vista" not in st.session_state:
     _m = st.query_params.get("m")
     st.session_state.vista = ("portada" if _m == "menu"
                               else "checklist_pre" if _m == "checklist"
                               else "capacitaciones" if _m == "capacitacion"
                               else "induccion")
+
+if "cap_curso" not in st.session_state:
+    _c = st.query_params.get("c")
+    _validos = {k for k, _ in ESPECIFICAS + OTRAS} & set(EXAMENES)
+    st.session_state.cap_curso = _c if _c in _validos else None
 
 # ---------- Logo ----------
 with open("logo.png", "rb") as f:
@@ -299,6 +305,30 @@ def logos_clientes():
     )
     st.markdown(html, unsafe_allow_html=True)
 
+NOMBRES_CAP = dict(ESPECIFICAS + OTRAS)
+
+def _botones_cap(lista):
+    for clave, nombre in lista:
+        activo = clave in EXAMENES
+        etiqueta = nombre if activo else f"🔒 {nombre} · Próximamente"
+        if st.button(etiqueta, key=f"cap_{clave}", disabled=not activo,
+                     use_container_width=True):
+            st.session_state.cap_curso = clave
+            st.rerun()
+
+def menu_capacitaciones():
+    if st.button("← Volver al menú"):
+        st.session_state.vista = "portada"
+        st.rerun()
+    st.subheader("Capacitaciones (Art. 54 del D.S. 011-2019-TR)")
+    st.header("CAPACITACIONES ESPECÍFICAS")
+    st.caption("Elige la capacitación que vas a rendir. Las marcadas con 🔒 se activarán pronto.")
+    _botones_cap(ESPECIFICAS)
+    st.divider()
+    st.header("OTRAS CAPACITACIONES QUE PUEDEN COMPLEMENTAR")
+    st.caption("Capacitaciones adicionales que no establece la ley.")
+    _botones_cap(OTRAS)
+
 if st.session_state.vista == "portada":
     st.subheader("Programación y automatización para SSOMA 4.0")
     st.caption("Elige un módulo. Los marcados con 🔒 se activarán pronto.")
@@ -332,6 +362,10 @@ if st.session_state.vista == "dashboard":
         st.rerun()
     with open("dashboard.html", encoding="utf-8") as f:
         components.html(f.read(), height=2600, scrolling=True)
+    st.stop()
+
+if st.session_state.vista == "capacitaciones" and not st.session_state.cap_curso:
+    menu_capacitaciones()
     st.stop()
 
 if st.session_state.vista not in ("induccion", "capacitaciones"):
@@ -377,13 +411,18 @@ def mostrar_resultado(r, duracion, titulo):
 
 # ---------- Pantalla 1: Ingreso ----------
 if not st.session_state.acceso:
-    if st.query_params.get("m") == "menu":
-        if st.button("← Volver al menú"):
-            st.session_state.vista = "portada"
+    if st.session_state.vista == "capacitaciones":
+        if st.button("← Volver a capacitaciones"):
+            st.session_state.cap_curso = None
             st.rerun()
-
-    st.subheader("Ingreso a Capacitación" if st.session_state.vista == "capacitaciones"
-                 else "Ingreso a Inducción")
+        st.subheader("Ingreso a Capacitación")
+        st.markdown(f"**{NOMBRES_CAP.get(st.session_state.cap_curso, '')}**")
+    else:
+        if st.query_params.get("m") == "menu":
+            if st.button("← Volver al menú"):
+                st.session_state.vista = "portada"
+                st.rerun()
+        st.subheader("Ingreso a Inducción")
     empresa = st.text_input("Empresa").strip()
     proyecto = st.text_input("Proyecto").strip()
     nombre = st.text_input("Apellidos y Nombres (completos)").strip()
@@ -409,6 +448,9 @@ if not st.session_state.acceso:
 
                 if usado and dni_guardado != dni:
                     st.error("Este código ya fue usado por otra persona.")
+                elif (st.session_state.vista == "capacitaciones"
+                      and fila["curso"] != st.session_state.cap_curso):
+                    st.error("Este código no corresponde a esta capacitación.")
                 else:
                     if not usado:
                         sb.table("codigos").update({
