@@ -100,6 +100,7 @@ MODULOS = [
     ("comite", "COMITÉ DE SST (Libro de actas inteligente)", False),
     ("controles", "CONTROLES DE INGENIERÍA (Trazabilidad)", False),
     ("informes", "INFORMES SSOMA INTELIGENTES", False),
+    ("epp", "Entrega de EPP (inteligente)", False),
     ("dashboard", "DASHBOARD (Ejemplo para tu empresa)", True),
 ]
 
